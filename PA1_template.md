@@ -34,7 +34,8 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 
 ##Part 1: Loading and Preprocessing the Data
 ###Load the data file
-```{r}
+
+```r
 # Read activity.csv file into variable "activity"
 activity <- read.csv(file="C:/Users/Linda/Documents/Data Science/activity.csv")
 
@@ -44,10 +45,17 @@ activity$date <- as.Date(activity$date)
 
 ##Part 1A: What is the mean total number of steps taken per day?
 ###Process data
-```{r}
+
+```r
 # Load reshape2 library to get melt and dcast functions
 library(reshape2)
+```
 
+```
+## Warning: package 'reshape2' was built under R version 3.1.3
+```
+
+```r
 # Melt data frame to prep for casting by date
 actMeltDate <- melt(activity, id.vars="date", measure.vars="steps", na.rm=FALSE)
 
@@ -56,23 +64,38 @@ actCastDate <- dcast(actMeltDate, date ~ variable, sum)
 ```
 
 ###Plot histogram of data
-```{r}
+
+```r
 # Plot histogram of total number of steps take each day
 plot(actCastDate$date, actCastDate$steps, type="h", main="Histogram of Daily Steps", xlab="Date", ylab="Steps per Day", col="blue", lwd=8)
 abline(h=mean(actCastDate$steps, na.rm=TRUE), col="red", lwd=2)
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 ###Calculate mean and median of steps by day
-```{r}
+
+```r
 # Calculate mean and median of daily steps
 paste("Mean Steps per Day =", mean(actCastDate$steps, na.rm=TRUE))
+```
 
+```
+## [1] "Mean Steps per Day = 10766.1886792453"
+```
+
+```r
 paste("Median Steps per Day =", median(actCastDate$steps, na.rm=TRUE))
+```
+
+```
+## [1] "Median Steps per Day = 10765"
 ```
 
 ##Section 2: What is the average daily activity pattern?
 ###Reprocess data to calculate by interval instead of day
-```{r}
+
+```r
 # Melt data frame to prepare to cast by interval; remove NA values
 actMeltInterval <- melt(activity, id.vars="interval", measure.vars="steps", na.rm=TRUE)
 
@@ -81,34 +104,53 @@ actCastInterval <- dcast(actMeltInterval, interval ~ variable, mean)
 ```
 
 ###Create a time series plot of average steps by interval
-```{r}
+
+```r
 # Plot line chart with average frequency of steps by interval and add line to indicate mean
 plot(actCastInterval$interval, actCastInterval$steps, type="l", main="Average Frequency of Steps at Each Interval", xlab="Interval", ylab="Steps", col="blue", lwd=2)
 abline(h=mean(actCastInterval$steps,na.rm=TRUE), col="red", lwd=2)
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+
+
+```r
 # Find the interval that has the max value
 paste("Interval with Max Value", actCastInterval$interval[which(actCastInterval$steps == max(actCastInterval$steps))])
 ```
 
-```{r}
+```
+## [1] "Interval with Max Value 835"
+```
+
+
+```r
 # Find the max value 
 paste("Maximum mean steps", max(actCastInterval$steps))
 ```
 
+```
+## [1] "Maximum mean steps 206.169811320755"
+```
+
 ##Part 3: Imputing missing values
 ###Calculate total number of missing values in dataset
-```{r}
+
+```r
 # Total number of missing values
 sum(is.na(activity$steps))
+```
+
+```
+## [1] 2304
 ```
 
 ###Document strategy of dealing with missing values
 I will replace NA values with the mean for that particular interval.
 
 ###Create new data set with imputed NA values as stated in strategy
-```{r}
+
+```r
 # Renaming data frame
 stepsPerInt <- actCastInterval
 
@@ -126,7 +168,8 @@ actNoNAs[naIndex, "steps"] = actMerge[naIndex, "steps.spi"]
 ```
 ###Plot histogram and calculate mean and median of total steps/day with new dataset and compare wit original
 
-```{r}
+
+```r
 # Melt new data frame to prepare to cast by date
 actMeltDateNoNA <- melt(actNoNAs, id.vars="date", measure.vars="steps", na.rm=FALSE)
 
@@ -138,11 +181,24 @@ plot(actCastDateNoNA$date, actCastDateNoNA$steps, type="h", main="Histogram of D
 abline(h=mean(actCastDateNoNA$steps), col="red", lwd=2)
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
+
+```r
 # Calculate mean and median 
 paste("Mean daily steps =", mean(actCastDateNoNA$steps, na.rm=TRUE))
+```
 
+```
+## [1] "Mean daily steps = 10889.7992576554"
+```
+
+```r
 paste("Median daily steps =", median(actCastDateNoNA$steps, na.rm=TRUE))
+```
+
+```
+## [1] "Median daily steps = 11015"
 ```
 Compare:
 
@@ -156,7 +212,8 @@ New Data Set (NAs imputed with mean value for that interval):
   
 ##Part 4: Are there differences in activity patterns between weekdays and weekends?
 ###Create a factor variable that states whether each day is a weekday or weekend
-```{r}
+
+```r
 # Create new factor variable
 for (i in 1:nrow(actNoNAs)) {
   if (weekdays(actNoNAs$date[i]) == "Saturday" | weekdays(actNoNAs$date[i]) == "Sunday") { actNoNAs$dayOfWeek[i] = "weekend" }
@@ -167,7 +224,8 @@ for (i in 1:nrow(actNoNAs)) {
 ```
 
 ###Subset, process and plot two charts to compare weekday vs. weekend activity 
-```{r}
+
+```r
 # To create a plot, we must first subset the data
 actWeekday <- subset(actNoNAs, dayOfWeek=="weekday")
 actWeekend <- subset(actNoNAs, dayOfWeek=="weekend")
@@ -180,12 +238,26 @@ actCastWeekend <- dcast(actMeltWeekend, interval ~ variable, mean)
 
 # Load plot packages necessary to continue
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
 library(gridExtra)
 ```
 
-```{r}
+```
+## Warning: package 'gridExtra' was built under R version 3.1.3
+```
+
+
+```r
 # Set plot area to two rows and one column, and then plot charts with mean line in each
 plot1 <- qplot(actCastWeekday$interval, actCastWeekday$steps, geom="line", data=actCastWeekday, type="bar", main="Steps by Interval - Weekday", xlab="Interval ID", ylab="Number of Steps")
 plot2 <- qplot(actCastWeekend$interval, actCastWeekend$steps, geom="line", data=actCastWeekend, type="bar", main="Steps by Interval - Weekend", xlab="Interval ID", ylab="Number of Steps")
 grid.arrange(plot1, plot2, nrow=2)
 ```
+
+![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png) 
